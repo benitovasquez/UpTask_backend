@@ -11,7 +11,11 @@ import { NoteController } from '../controllers/NoteController'
 
 const router = Router()
 
+/*Identificador */
+
 router.use(authenticate)
+
+/*Proyectos */
 
 router.post('/',
     body('projectName')
@@ -56,7 +60,7 @@ router.delete('/:projectId',
     ProjectController.deleteProject
 )
 
-
+/*Task */
 router.post('/:projectId/tasks',
     hasAuthorization,
     body('name')
