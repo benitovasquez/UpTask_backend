@@ -1,7 +1,7 @@
 import server from './server'
 import colors from 'colors'
 
-const port= process.env.PORT || 4000
+const port= process.env.PORT || 10000
 
 
 server.listen(port, ()=>{
