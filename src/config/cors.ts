@@ -3,8 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const allowedOrigins = [
-    process.env.FRONTEND_URL,            // Producción
-    'http://localhost:5173'              // Desarrollo
+    process.env.FRONTEND_URL          
 ];
 
 export const corsConfig = {
