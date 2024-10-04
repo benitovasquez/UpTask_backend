@@ -70,40 +70,57 @@ export class AuthController{
             res.status(500).json({error: 'Hubo un error'})
         }
     }
-    static login=async (req: Request, res: Response)=>{
+    static login = async (req: Request, res: Response) => {
         try {
-            const {email, password}=req.body
-            const user= await User.findOne({email})
-            if(!user){
-                const error= new Error('Usuario no encontrado')
-                return res.status(401).json({error: error.message})
+            const { email, password } = req.body;
+            
+            console.log('Intentando iniciar sesión para el email:', email);
+            
+            const user = await User.findOne({ email });
+            if (!user) {
+                const error = new Error('Usuario no encontrado');
+                console.error(error.message);
+                return res.status(401).json({ error: error.message });
             }
-            if(!user.confirmed){
-                const token=new Token()
-                token.user=user.id
-                token.token=generateToken()
-                await token.save()
-
-                //enviar el email
-                AuthEmail.sendConfirmationEmail({
-                    email: user.email,
-                    name: user.name,
-                    token: token.token
-                })
-                const error=new Error('La cuenta no ha sido confirmada, le he enviado un email para confirmar')
-                return res.status(401).json({error: error.message})
+    
+            if (!user.confirmed) {
+                const token = new Token();
+                token.user = user.id;
+                token.token = generateToken();
+                await token.save();
+    
+                // Enviar el email de confirmación
+                try {
+                    AuthEmail.sendConfirmationEmail({
+                        email: user.email,
+                        name: user.name,
+                        token: token.token
+                    });
+                } catch (emailError) {
+                    console.error('Error al enviar el email de confirmación:', emailError);
+                }
+    
+                const error = new Error('La cuenta no ha sido confirmada, le he enviado un email para confirmar');
+                console.error(error.message);
+                return res.status(401).json({ error: error.message });
             }
-            // Revisar password
-            const isPasswordCorrect=await  checkPassword(password, user.password)
-            if(!isPasswordCorrect){
-                const error= new Error('Password Incorrecto')
-                return res.status(401).json({error: error.message})
+    
+            // Revisar contraseña
+            const isPasswordCorrect = await checkPassword(password, user.password);
+            if (!isPasswordCorrect) {
+                const error = new Error('Password Incorrecto');
+                console.error(error.message);
+                return res.status(401).json({ error: error.message });
             }
-            const token = generateJWT({ id: user._id.toString() })
-            res.send(token)
-
+    
+            // Generar token
+            const token = generateJWT({ id: user._id.toString() });
+            console.log('Login exitoso para:', email);
+            res.send(token);
+    
         } catch (error) {
-            res.status(500).json({error: 'Hubo un error'})
+            console.error('Error en login:', error);
+            res.status(500).json({ error: 'Hubo un error en el servidor', detalle: error.message });
         }
     }
 
